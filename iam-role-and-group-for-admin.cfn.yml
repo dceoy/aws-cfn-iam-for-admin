@@ -1,0 +1,34 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM user groups for administrators
+Resources:
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub AdminRole-${AWS::AccountId}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+  AdminRoleAssumerGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub admin-role-assumer-group-${AWS::AccountId}
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      Policies:
+        - PolicyName: !Sub assume-admin-role-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: sts:AssumeRole
+                Resource: !GetAtt AdminRole.Arn

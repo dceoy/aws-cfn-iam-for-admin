@@ -20,5 +20,6 @@ Installation
 3.  Deploy stacks for IAM user groups.
 
     ```sh
-    $ rain deploy iam-user-groups-for-admin.cfn.yml iam-user-groups-for-admin
+    $ rain deploy \
+        iam-role-and-group-for-admin.cfn.yml iam-role-and-group-for-admin
     ```
