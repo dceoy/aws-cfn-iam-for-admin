@@ -22,8 +22,6 @@ Resources:
     Properties:
       GroupName: !Sub admin-role-assumer-group-${AWS::AccountId}
       Path: /
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/ReadOnlyAccess
       Policies:
         - PolicyName: !Sub assume-admin-role-policy-${AWS::AccountId}
           PolicyDocument:
@@ -32,3 +30,23 @@ Resources:
               - Effect: Allow
                 Action: sts:AssumeRole
                 Resource: !GetAtt AdminRole.Arn
+  ReadOnlyUserGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub read-only-user-group-${AWS::AccountId}
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+Outputs:
+  AdminRoleArn:
+    Value: !GetAtt AdminRole.Arn
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleArn
+  AdminRoleAssumerGroup:
+    Value: !Ref AdminRoleAssumerGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleAssumerGroup
+  ReadOnlyUserGroup:
+    Value: !Ref ReadOnlyUserGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-ReadOnlyUserGroup

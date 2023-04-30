@@ -27,24 +27,29 @@ Installation
 Usage
 -----
 
-##### AWS CLI
+1.  Install [AWS CLI](https://aws.amazon.com/cli/).
 
-Assume the administrator role using [AWS CLI](https://aws.amazon.com/cli/).
+2.  Assume the administrator role.
 
-```sh
-$ aws sts get-caller-identity \
-    | jq -r .Account \
-    | xargs -t -I {} \
-      aws sts assume-role \
-      --role-arn arn:aws:iam::{}:role/AdminRole-{} \
-      --role-session-name "my-admin-session-${RANDOM}" \
-      --duration-seconds 3600 \
-    > tmp.role.json
-$ export AWS_ACCESS_KEY_ID=$(jq -r .Credentials.AccessKeyId tmp.role.json)
-$ export AWS_SECRET_ACCESS_KEY=$(jq -r .Credentials.SecretAccessKey tmp.role.json)
-$ export AWS_SESSION_TOKEN=$(jq -r .Credentials.SessionToken tmp.role.json)
-```
+    ```sh
+    $ aws sts get-caller-identity \
+        | jq -r .Account \
+        | xargs -t -I {} \
+          aws sts assume-role \
+          --role-arn arn:aws:iam::{}:role/AdminRole-{} \
+          --role-session-name "my-admin-session-${RANDOM}" \
+          --duration-seconds 3600 \
+        > tmp.role.json
+    $ export AWS_ACCESS_KEY_ID=$(jq -r .Credentials.AccessKeyId tmp.role.json)
+    $ export AWS_SECRET_ACCESS_KEY=$(jq -r .Credentials.SecretAccessKey tmp.role.json)
+    $ export AWS_SESSION_TOKEN=$(jq -r .Credentials.SessionToken tmp.role.json)
+    ```
 
-##### AWS Management Console
+3.  Execute some commands with the administrator role.
 
-See [the user guide of IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-console.html).
+4.  Clear temporary credentials.
+
+    ```sh
+    $ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+    $ rm -f tmp.role.json
+    ```
