@@ -17,6 +17,7 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
+      MaxSessionDuration: 43200
   AdminRoleAssumerGroup:
     Type: AWS::IAM::Group
     Properties:
