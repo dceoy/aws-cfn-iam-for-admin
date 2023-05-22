@@ -38,6 +38,45 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
+  SelfManagedIamUserGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub self-managed-iam-user-group-${AWS::AccountId}
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/IAMUserChangePassword
+        - arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials
+        - arn:aws:iam::aws:policy/IAMUserSSHKeys
+      Policies:
+        - PolicyName: !Sub iam-user-mfa-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:CreateVirtualMFADevice
+                  - iam:DeactivateMFADevice
+                  - iam:DeleteVirtualMFADevice
+                  - iam:EnableMFADevice
+                  - iam:ListMFADeviceTags
+                  - iam:ListMFADevices
+                  - iam:ListVirtualMFADevices
+                  - iam:ResyncMFADevice
+                  - iam:TagMFADevice
+                  - iam:UntagMFADevice
+                Resource: 'arn:aws:iam::*:user/${aws:username}'
+        - PolicyName: !Sub iam-user-access-key-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:CreateAccessKey
+                  - iam:DeleteAccessKey
+                  - iam:GetAccessKeyLastUsed
+                  - iam:ListAccessKeys
+                  - iam:UpdateAccessKey
+                Resource: 'arn:aws:iam::*:user/${aws:username}'
 Outputs:
   AdminRoleArn:
     Value: !GetAtt AdminRole.Arn
@@ -51,3 +90,7 @@ Outputs:
     Value: !Ref ReadOnlyUserGroup
     Export:
       Name: !Sub ${AWS::Region}-${AWS::StackName}-ReadOnlyUserGroup
+  SelfManagedIamUserGroup:
+    Value: !Ref SelfManagedIamUserGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-SelfManagedIamUserGroup
