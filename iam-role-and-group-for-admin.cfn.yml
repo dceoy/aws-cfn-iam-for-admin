@@ -18,6 +18,9 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
       MaxSessionDuration: 43200
+      Tags:
+        - Key: Name
+          Value: !Sub AdminRole-${AWS::AccountId}
   AdminRoleAssumerGroup:
     Type: AWS::IAM::Group
     Properties:
