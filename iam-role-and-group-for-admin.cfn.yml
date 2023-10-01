@@ -32,8 +32,10 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: sts:AssumeRole
-                Resource: !GetAtt AdminRole.Arn
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !GetAtt AdminRole.Arn
   ReadOnlyUserGroup:
     Type: AWS::IAM::Group
     Properties:
@@ -67,7 +69,8 @@ Resources:
                   - iam:ResyncMFADevice
                   - iam:TagMFADevice
                   - iam:UntagMFADevice
-                Resource: 'arn:aws:iam::*:user/${aws:username}'
+                Resource:
+                  - 'arn:aws:iam::*:user/${aws:username}'
         - PolicyName: !Sub iam-user-access-key-policy-${AWS::AccountId}
           PolicyDocument:
             Version: 2012-10-17
@@ -79,7 +82,8 @@ Resources:
                   - iam:GetAccessKeyLastUsed
                   - iam:ListAccessKeys
                   - iam:UpdateAccessKey
-                Resource: 'arn:aws:iam::*:user/${aws:username}'
+                Resource:
+                  - 'arn:aws:iam::*:user/${aws:username}'
 Outputs:
   AdminRoleArn:
     Value: !GetAtt AdminRole.Arn

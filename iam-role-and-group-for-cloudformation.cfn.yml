@@ -1,0 +1,67 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM user groups for administrators
+Resources:
+  CloudFormationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub CloudFormationRole-${AWS::AccountId}
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+        - arn:aws:iam::aws:policy/IAMFullAccess
+      Tags:
+        - Key: Name
+          Value: !Sub CloudFormationRole-${AWS::AccountId}
+  CloudFormationUserGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub cloudformation-user-group-${AWS::AccountId}
+      Path: /
+      Policies:
+        - PolicyName: !Sub cloudformation-execution-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:Describe*
+                  - cloudformation:List*
+                  - cloudformation:Get*
+                  - cloudformation:EstimateTemplateCost
+                  - cloudformation:ValidateTemplate
+                  - cloudformation:Detect*
+                  - cloudformation:CreateStack
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:DeleteChangeSet
+                Resource:
+                  - '*'
+        - PolicyName: !Sub pass-cloudformation-role-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt CloudFormationRole.Arn
+Outputs:
+  CloudFormationRoleArn:
+    Value: !GetAtt CloudFormationRole.Arn
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-CloudFormationRoleArn
+  CloudFormationUserGroup:
+    Value: !Ref CloudFormationUserGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-CloudFormationUserGroup
