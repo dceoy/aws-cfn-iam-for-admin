@@ -27,29 +27,47 @@ Installation
 Usage
 -----
 
-1.  Install [AWS CLI](https://aws.amazon.com/cli/).
+1.  Create an IAM user and add it to the administrator IAM group.
 
-2.  Assume the administrator role.
+2.  Install [AWS CLI](https://aws.amazon.com/cli/) and set `~/.aws/config` and `~/.aws/credentials`.
 
-    ```sh
-    $ aws sts get-caller-identity \
-        | jq -r .Account \
-        | xargs -t -I {} \
-          aws sts assume-role \
-          --role-arn arn:aws:iam::{}:role/AdminRole-{} \
-          --role-session-name "my-admin-session-${RANDOM}" \
-          --duration-seconds 3600 \
-        > tmp.role.json
-    $ export AWS_ACCESS_KEY_ID=$(jq -r .Credentials.AccessKeyId tmp.role.json)
-    $ export AWS_SECRET_ACCESS_KEY=$(jq -r .Credentials.SecretAccessKey tmp.role.json)
-    $ export AWS_SESSION_TOKEN=$(jq -r .Credentials.SessionToken tmp.role.json)
-    ```
+3.  Switch to the IAM role.
 
-3.  Execute some commands with the administrator role.
+    - Option 1: Use an AWS CLI profile.
 
-4.  Clear temporary credentials.
+      1.  Write a profile for the administrator IAM role in `~/.aws/config`.
+          (Replace `123456789012` below with your account ID.)
 
-    ```sh
-    $ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-    $ rm -f tmp.role.json
-    ```
+          ```ini
+          [profile admin]
+          role_arn = arn:aws:iam::123456789012:role/AdminRole-123456789012
+          source_profile = default
+          ```
+
+      2.  Execute some commands using the profile.
+
+          ```sh
+          $ aws --profile admin sts get-caller-identity
+          ```
+
+    - Option 2: Generate temporary credentials.
+
+      1.  Assume the administrator IAM role.
+
+          ```sh
+          $ ./assume-admin-role.sh
+          $ source tmp.role.sh
+          ```
+
+      2.  Execute some commands with the administrator role.
+
+          ```sh
+          $ aws sts get-caller-identity
+          ```
+
+      3.  Clear temporary credentials.
+
+          ```sh
+          $ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+          $ rm -f tmp.role.json
+          ```
