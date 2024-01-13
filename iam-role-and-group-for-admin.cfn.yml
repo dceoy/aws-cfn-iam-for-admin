@@ -36,6 +36,21 @@ Resources:
                   - sts:AssumeRole
                 Resource:
                   - !GetAtt AdminRole.Arn
+  AccountRolesAssumerGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub account-roles-assumer-group-${AWS::AccountId}
+      Path: /
+      Policies:
+        - PolicyName: !Sub account-roles-assumer-role-policy-${AWS::AccountId}
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
   ReadOnlyUserGroup:
     Type: AWS::IAM::Group
     Properties:
@@ -93,6 +108,10 @@ Outputs:
     Value: !Ref AdminRoleAssumerGroup
     Export:
       Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleAssumerGroup
+  AccountRolesAssumerGroup:
+    Value: !Ref AccountRolesAssumerGroup
+    Export:
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AccountRolesAssumerGroup
   ReadOnlyUserGroup:
     Value: !Ref ReadOnlyUserGroup
     Export:
