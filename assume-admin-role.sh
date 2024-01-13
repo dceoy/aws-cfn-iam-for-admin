@@ -18,7 +18,7 @@ tmp_credentials="$( \
     | jq -r .Account \
     | xargs -t -I {} \
       aws sts assume-role \
-      --role-arn arn:aws:iam::{}:role/AdminRole-{} \
+      --role-arn arn:aws:iam::{}:role/AdminRoleToSwitch \
       --role-session-name "admin-session-${RANDOM}" \
       --duration-seconds 3600 \
 )"

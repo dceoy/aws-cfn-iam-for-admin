@@ -40,7 +40,7 @@ Usage
 
           ```ini
           [profile admin]
-          role_arn = arn:aws:iam::123456789012:role/AdminRole-123456789012
+          role_arn = arn:aws:iam::123456789012:role/AdminRoleToSwitch
           source_profile = default
           ```
 

@@ -2,10 +2,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: IAM user groups for administrators
 Resources:
-  AdminRole:
+  AdminRoleToSwitch:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub AdminRole-${AWS::AccountId}
+      RoleName: AdminRoleToSwitch
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -20,14 +20,14 @@ Resources:
       MaxSessionDuration: 43200
       Tags:
         - Key: Name
-          Value: !Sub AdminRole-${AWS::AccountId}
-  AdminRoleAssumerGroup:
+          Value: AdminRoleToSwitch
+  AdminRoleSwitcherGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: !Sub admin-role-assumer-group-${AWS::AccountId}
+      GroupName: admin-role-switch-group
       Path: /
       Policies:
-        - PolicyName: !Sub assume-admin-role-policy-${AWS::AccountId}
+        - PolicyName: assume-admin-role-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -35,40 +35,25 @@ Resources:
                 Action:
                   - sts:AssumeRole
                 Resource:
-                  - !GetAtt AdminRole.Arn
-  AccountRolesAssumerGroup:
-    Type: AWS::IAM::Group
-    Properties:
-      GroupName: !Sub account-roles-assumer-group-${AWS::AccountId}
-      Path: /
-      Policies:
-        - PolicyName: !Sub account-roles-assumer-role-policy-${AWS::AccountId}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sts:AssumeRole
-                Resource:
-                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
+                  - !GetAtt AdminRoleToSwitch.Arn
   ReadOnlyUserGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: !Sub read-only-user-group-${AWS::AccountId}
+      GroupName: read-only-user-group
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
   SelfManagedIamUserGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: !Sub self-managed-iam-user-group-${AWS::AccountId}
+      GroupName: self-managed-iam-user-group
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/IAMUserChangePassword
         - arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials
         - arn:aws:iam::aws:policy/IAMUserSSHKeys
       Policies:
-        - PolicyName: !Sub iam-user-mfa-policy-${AWS::AccountId}
+        - PolicyName: iam-user-mfa-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -86,7 +71,7 @@ Resources:
                   - iam:UntagMFADevice
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
-        - PolicyName: !Sub iam-user-access-key-policy-${AWS::AccountId}
+        - PolicyName: iam-user-access-key-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -100,18 +85,14 @@ Resources:
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
 Outputs:
-  AdminRoleArn:
-    Value: !GetAtt AdminRole.Arn
+  AdminRoleToSwitchArn:
+    Value: !GetAtt AdminRoleToSwitch.Arn
     Export:
-      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleArn
-  AdminRoleAssumerGroup:
-    Value: !Ref AdminRoleAssumerGroup
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleToSwitchArn
+  AdminRoleSwitcherGroup:
+    Value: !Ref AdminRoleSwitcherGroup
     Export:
-      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleAssumerGroup
-  AccountRolesAssumerGroup:
-    Value: !Ref AccountRolesAssumerGroup
-    Export:
-      Name: !Sub ${AWS::Region}-${AWS::StackName}-AccountRolesAssumerGroup
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleSwitcherGroup
   ReadOnlyUserGroup:
     Value: !Ref ReadOnlyUserGroup
     Export:
