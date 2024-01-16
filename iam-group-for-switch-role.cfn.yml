@@ -16,7 +16,7 @@ Resources:
                 Action:
                   - sts:AssumeRole
                 Resource:
-                  - '*'
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
 Outputs:
   AccountRolesSwitcherGroup:
     Value: !Ref AccountRolesSwitcherGroup
