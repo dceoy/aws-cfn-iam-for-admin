@@ -21,13 +21,13 @@ Resources:
       Tags:
         - Key: Name
           Value: AdminRoleToSwitch
-  AdminRoleSwitcherGroup:
+  AccountRolesSwitcherGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: admin-role-switch-group
+      GroupName: account-roles-switch-group
       Path: /
       Policies:
-        - PolicyName: assume-admin-role-policy
+        - PolicyName: account-roles-switch-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -35,7 +35,7 @@ Resources:
                 Action:
                   - sts:AssumeRole
                 Resource:
-                  - !GetAtt AdminRoleToSwitch.Arn
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
   ReadOnlyUserGroup:
     Type: AWS::IAM::Group
     Properties:
@@ -89,10 +89,10 @@ Outputs:
     Value: !GetAtt AdminRoleToSwitch.Arn
     Export:
       Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleToSwitchArn
-  AdminRoleSwitcherGroup:
-    Value: !Ref AdminRoleSwitcherGroup
+  AccountRolesSwitcherGroup:
+    Value: !Ref AccountRolesSwitcherGroup
     Export:
-      Name: !Sub ${AWS::Region}-${AWS::StackName}-AdminRoleSwitcherGroup
+      Name: !Sub ${AWS::Region}-${AWS::StackName}-AccountRolesSwitcherGroup
   ReadOnlyUserGroup:
     Value: !Ref ReadOnlyUserGroup
     Export:
