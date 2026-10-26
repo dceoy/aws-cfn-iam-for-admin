@@ -1,73 +1,70 @@
-aws-cfn-iam-for-admin
-=====================
+# aws-cfn-iam-for-admin
 
-AWS CloudFormation stacks of IAM user groups for administrators
+AWS CloudFormation stacks for IAM administrator roles and user groups.
 
-[![Lint](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/lint.yml/badge.svg)](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/lint.yml)
+[![CI](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/ci.yml)
 
-Installation
-------------
+IAM users authenticate with browser-based `aws login` instead of long-term IAM access keys. The administrator and CloudFormation roles, together with the relevant groups, have an explicit deny for `iam:CreateAccessKey` and `iam:UpdateAccessKey`. Existing access keys are **not** deleted by these stacks.
 
-1.  Check out the repository.
+## Installation
 
-    ```sh
-    $ git clone --recurse-submodules git@github.com:dceoy/aws-cfn-iam-for-admin.git
-    $ cd aws-cfn-iam-for-admin
-    ```
+1. Install [AWS CLI v2.32.0 or later](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [Rain](https://github.com/aws-cloudformation/rain).
+2. Check out this repository:
 
-2.  Install [Rain](https://github.com/aws-cloudformation/rain) and set `~/.aws/config` and `~/.aws/credentials`.
+   ```sh
+   git clone https://github.com/dceoy/aws-cfn-iam-for-admin.git
+   cd aws-cfn-iam-for-admin
+   ```
 
-3.  Deploy stacks for IAM user groups.
+3. Sign in with an existing principal that can deploy IAM CloudFormation stacks (and has permission to use `aws login`):
 
-    ```sh
-    $ rain deploy -y \
-        iam-role-and-group-for-admin.cfn.yml iam-role-and-group-for-admin
-    ```
+   ```sh
+   aws login --profile bootstrap
+   ```
 
-Usage
------
+4. Deploy the IAM role and group stack:
 
-1.  Create an IAM user and add it to the administrator IAM group.
+   ```sh
+   AWS_PROFILE=bootstrap rain deploy -y \
+     iam-role-and-group-for-admin.cfn.yml iam-role-and-group-for-admin
+   ```
 
-2.  Install [AWS CLI](https://aws.amazon.com/cli/) and set `~/.aws/config` and `~/.aws/credentials`.
+   The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and group with the same access-key guardrail.
 
-3.  Switch to the IAM role.
+## Usage
 
-    - Option 1: Use an AWS CLI profile.
+1. Create an IAM user with AWS Management Console sign-in enabled, configure MFA, and add the user to `account-roles-switch-group` and `self-managed-iam-user-group`. The latter grants the AWS-managed `SignInLocalDevelopmentAccess` policy required by `aws login`.
+2. Sign in interactively (no static entries in `~/.aws/credentials` are needed):
 
-      1.  Write a profile for the administrator IAM role in `~/.aws/config`.
-          (Replace `123456789012` below with your account ID.)
+   ```sh
+   aws login --profile operator
+   aws sts get-caller-identity --profile operator
+   ```
 
-          ```ini
-          [profile admin]
-          role_arn = arn:aws:iam::123456789012:role/AdminRoleToSwitch
-          source_profile = default
-          ```
+3. Configure an administrator role profile in `~/.aws/config`, replacing the account ID:
 
-      2.  Execute some commands using the profile.
+   ```ini
+   [profile admin]
+   role_arn = arn:aws:iam::123456789012:role/AdminRoleToSwitch
+   source_profile = operator
+   ```
 
-          ```sh
-          $ aws --profile admin sts get-caller-identity
-          ```
+4. Use the assumed administrator role. The AWS CLI retrieves temporary role credentials automatically:
 
-    - Option 2: Generate temporary credentials.
+   ```sh
+   aws sts get-caller-identity --profile admin
+   ```
 
-      1.  Assume the administrator IAM role.
+5. Sign out when finished:
 
-          ```sh
-          $ ./assume-admin-role.sh
-          $ source tmp.role.sh
-          ```
+   ```sh
+   aws logout --profile operator
+   ```
 
-      2.  Execute some commands with the administrator role.
+## Security considerations
 
-          ```sh
-          $ aws sts get-caller-identity
-          ```
+- The deny policies prevent creating or reactivating **long-term IAM access keys** for principals covered by these stacks. They do not block temporary session credentials issued by `aws login` or AWS STS.
+- An administrator with IAM policy-modification privileges can detach or change these policies, and other IAM roles or users may not be covered. Enforce an account-wide, tamper-resistant restriction with an AWS Organizations service control policy (SCP) where applicable.
+- Remove any existing long-term access keys separately. Stack updates do not revoke or delete them.
 
-      3.  Clear temporary credentials.
-
-          ```sh
-          $ unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-          $ rm -f tmp.role.json
-          ```
+See [AWS CLI sign-in documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sign-in.html) for the browser login workflow.
