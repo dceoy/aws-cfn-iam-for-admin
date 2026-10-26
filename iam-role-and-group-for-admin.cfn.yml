@@ -49,6 +49,7 @@ Resources:
       GroupName: self-managed-iam-user-group
       Path: /
       ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/SignInLocalDevelopmentAccess
         - arn:aws:iam::aws:policy/IAMUserChangePassword
         - arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials
         - arn:aws:iam::aws:policy/IAMUserSSHKeys
@@ -71,19 +72,34 @@ Resources:
                   - iam:UntagMFADevice
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
-        - PolicyName: iam-user-access-key-policy
+        - PolicyName: iam-user-access-key-cleanup-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - iam:CreateAccessKey
                   - iam:DeleteAccessKey
                   - iam:GetAccessKeyLastUsed
                   - iam:ListAccessKeys
-                  - iam:UpdateAccessKey
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
+  LongTermAccessKeyDenyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Deny creating or reactivating long-term IAM access keys.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - iam:CreateAccessKey
+              - iam:UpdateAccessKey
+            Resource: '*'
+      Roles:
+        - !Ref AdminRoleToSwitch
+      Groups:
+        - !Ref AccountRolesSwitcherGroup
+        - !Ref SelfManagedIamUserGroup
 Outputs:
   AdminRoleToSwitchArn:
     Value: !GetAtt AdminRoleToSwitch.Arn
