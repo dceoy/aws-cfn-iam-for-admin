@@ -56,6 +56,22 @@ Resources:
                   - iam:PassRole
                 Resource:
                   - !GetAtt CloudFormationRole.Arn
+  LongTermAccessKeyDenyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Deny creating or reactivating long-term IAM access keys.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - iam:CreateAccessKey
+              - iam:UpdateAccessKey
+            Resource: '*'
+      Roles:
+        - !Ref CloudFormationRole
+      Groups:
+        - !Ref CloudFormationUserGroup
 Outputs:
   CloudFormationRoleArn:
     Value: !GetAtt CloudFormationRole.Arn
