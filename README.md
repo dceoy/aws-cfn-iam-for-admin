@@ -4,11 +4,11 @@ AWS CloudFormation stacks for IAM administrator roles and user groups.
 
 [![CI](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dceoy/aws-cfn-iam-for-admin/actions/workflows/ci.yml)
 
-IAM users authenticate with browser-based `aws login` instead of long-term IAM access keys. The administrator and CloudFormation roles, together with the relevant groups, have an explicit deny for `iam:CreateAccessKey` and `iam:UpdateAccessKey`. Existing access keys are **not** deleted by these stacks.
+IAM users authenticate with browser-based `aws login` instead of long-term IAM access keys. The administrator and CloudFormation roles and all IAM groups managed by these stacks have an explicit deny for `iam:CreateAccessKey`. Existing access keys are **not** deleted by these stacks.
 
 ## Installation
 
-1. Install [AWS CLI v2.32.0 or later](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [Rain](https://github.com/aws-cloudformation/rain).
+1. Install [AWS CLI v2.32.0 or later](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 2. Check out this repository:
 
    ```sh
@@ -25,8 +25,11 @@ IAM users authenticate with browser-based `aws login` instead of long-term IAM a
 4. Deploy the IAM role and group stack:
 
    ```sh
-   AWS_PROFILE=bootstrap rain deploy -y \
-     iam-role-and-group-for-admin.cfn.yml iam-role-and-group-for-admin
+   aws cloudformation deploy \
+     --template-file iam-role-and-group-for-admin.cfn.yml \
+     --stack-name iam-role-and-group-for-admin \
+     --capabilities CAPABILITY_NAMED_IAM \
+     --profile bootstrap
    ```
 
    The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and group with the same access-key guardrail.
@@ -63,8 +66,8 @@ IAM users authenticate with browser-based `aws login` instead of long-term IAM a
 
 ## Security considerations
 
-- The deny policies prevent creating or reactivating **long-term IAM access keys** for principals covered by these stacks. They do not block temporary session credentials issued by `aws login` or AWS STS.
+- The deny policies prevent **creating new long-term IAM access keys** for principals covered by these stacks, but intentionally do not deny `iam:UpdateAccessKey`: existing keys can still be deactivated during incident response (or reactivated by principals otherwise authorized). They do not block temporary session credentials issued by `aws login` or AWS STS.
 - An administrator with IAM policy-modification privileges can detach or change these policies, and other IAM roles or users may not be covered. Enforce an account-wide, tamper-resistant restriction with an AWS Organizations service control policy (SCP) where applicable.
-- Remove any existing long-term access keys separately. Stack updates do not revoke or delete them.
+- Deactivate and delete any existing long-term access keys separately. Stack updates do not revoke or delete them. To block reactivation account-wide, remove legacy keys and establish separate organization-level guardrails.
 
 See [AWS CLI sign-in documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sign-in.html) for the browser login workflow.
