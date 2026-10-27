@@ -35,7 +35,7 @@ Resources:
                 Action:
                   - sts:AssumeRole
                 Resource:
-                  - !GetAtt AdminRoleToSwitch.Arn
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
   ReadOnlyUserGroup:
     Type: AWS::IAM::Group
     Properties:
