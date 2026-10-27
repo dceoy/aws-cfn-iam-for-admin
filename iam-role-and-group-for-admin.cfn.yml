@@ -75,13 +75,21 @@ Resources:
                   - 'arn:aws:iam::*:mfa/${aws:username}'
               - Effect: Allow
                 Action:
-                  - iam:DeactivateMFADevice
                   - iam:EnableMFADevice
                   - iam:GetMFADevice
+                  - iam:GetUser
                   - iam:ListMFADevices
                   - iam:ResyncMFADevice
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
+              - Effect: Allow
+                Action:
+                  - iam:DeactivateMFADevice
+                Resource:
+                  - 'arn:aws:iam::*:user/${aws:username}'
+                Condition:
+                  Bool:
+                    aws:MultiFactorAuthPresent: 'true'
         - PolicyName: iam-user-access-key-cleanup-policy
           PolicyDocument:
             Version: 2012-10-17
