@@ -32,11 +32,11 @@ IAM users authenticate with browser-based `aws login` instead of long-term IAM a
      --profile bootstrap
    ```
 
-   The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and group with the same access-key guardrail.
+   The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and the `cloudformation-user-group` group with the same access-key guardrail. Updating an existing stack replaces the old account-ID-suffixed group; migrate its IAM user memberships and any external group-name references before retiring the old group.
 
 ## Usage
 
-1. Create an IAM user with AWS Management Console sign-in enabled, configure MFA, and add the user to `account-roles-switch-group` and `self-managed-iam-user-group`. The latter grants the AWS-managed `SignInLocalDevelopmentAccess` policy required by `aws login`.
+1. Create an IAM user with AWS Management Console sign-in enabled, configure MFA, and add the user to `account-roles-switch-group` and `self-managed-iam-user-group`. The latter grants the AWS-managed `SignInLocalDevelopmentAccess` policy required by `aws login`, password and MFA self-management, and access-key deletion. SSH public-key and service-specific credential management are not granted by default.
 2. Sign in interactively (no static entries in `~/.aws/credentials` are needed):
 
    ```sh
