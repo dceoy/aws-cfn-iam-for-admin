@@ -32,7 +32,7 @@ IAM users authenticate with browser-based `aws login` instead of long-term IAM a
      --profile bootstrap
    ```
 
-   The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and the `cloudformation-user-group` group with the same access-key guardrail. Updating an existing stack replaces the old account-ID-suffixed group; migrate its IAM user memberships and any external group-name references before retiring the old group.
+   The optional `iam-role-and-group-for-cloudformation.cfn.yml` stack provides a CloudFormation execution role and the existing `cloudformation-user-group-<account-id>` group naming convention with the same access-key guardrail.
 
 ## Usage
 
