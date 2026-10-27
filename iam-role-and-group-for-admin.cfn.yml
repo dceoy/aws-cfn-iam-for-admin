@@ -64,7 +64,7 @@ Resources:
                 Action:
                   - iam:CreateVirtualMFADevice
                 Resource:
-                  - 'arn:aws:iam::*:mfa/*'
+                  - 'arn:aws:iam::*:mfa/${aws:username}'
               - Effect: Allow
                 Action:
                   - iam:DeleteVirtualMFADevice
