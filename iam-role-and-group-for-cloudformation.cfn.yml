@@ -24,7 +24,7 @@ Resources:
   CloudFormationUserGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: cloudformation-user-group
+      GroupName: !Sub cloudformation-user-group-${AWS::AccountId}
       Path: /
       Policies:
         - PolicyName: !Sub cloudformation-execution-policy-${AWS::AccountId}
