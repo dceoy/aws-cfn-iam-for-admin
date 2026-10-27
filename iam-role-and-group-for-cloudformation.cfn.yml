@@ -24,7 +24,7 @@ Resources:
   CloudFormationUserGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: !Sub cloudformation-user-group-${AWS::AccountId}
+      GroupName: cloudformation-user-group
       Path: /
       Policies:
         - PolicyName: !Sub cloudformation-execution-policy-${AWS::AccountId}
@@ -56,6 +56,9 @@ Resources:
                   - iam:PassRole
                 Resource:
                   - !GetAtt CloudFormationRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: cloudformation.amazonaws.com
   LongTermAccessKeyDenyPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
