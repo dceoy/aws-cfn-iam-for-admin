@@ -24,7 +24,7 @@ Resources:
   CloudFormationUserGroup:
     Type: AWS::IAM::Group
     Properties:
-      GroupName: !Sub cloudformation-user-group-${AWS::AccountId}
+      GroupName: cloudformation-user-group
       Path: /
       Policies:
         - PolicyName: !Sub cloudformation-execution-policy-${AWS::AccountId}
@@ -56,6 +56,24 @@ Resources:
                   - iam:PassRole
                 Resource:
                   - !GetAtt CloudFormationRole.Arn
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: cloudformation.amazonaws.com
+  LongTermAccessKeyDenyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Deny creating long-term IAM access keys.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - iam:CreateAccessKey
+            Resource: '*'
+      Roles:
+        - !Ref CloudFormationRole
+      Groups:
+        - !Ref CloudFormationUserGroup
 Outputs:
   CloudFormationRoleArn:
     Value: !GetAtt CloudFormationRole.Arn

@@ -49,9 +49,8 @@ Resources:
       GroupName: self-managed-iam-user-group
       Path: /
       ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/SignInLocalDevelopmentAccess
         - arn:aws:iam::aws:policy/IAMUserChangePassword
-        - arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials
-        - arn:aws:iam::aws:policy/IAMUserSSHKeys
       Policies:
         - PolicyName: iam-user-mfa-policy
           PolicyDocument:
@@ -59,31 +58,66 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - iam:CreateVirtualMFADevice
-                  - iam:DeactivateMFADevice
-                  - iam:DeleteVirtualMFADevice
-                  - iam:EnableMFADevice
-                  - iam:ListMFADeviceTags
-                  - iam:ListMFADevices
                   - iam:ListVirtualMFADevices
-                  - iam:ResyncMFADevice
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - iam:CreateVirtualMFADevice
+                Resource:
+                  - 'arn:aws:iam::*:mfa/${aws:username}'
+              - Effect: Allow
+                Action:
+                  - iam:DeleteVirtualMFADevice
+                  - iam:ListMFADeviceTags
                   - iam:TagMFADevice
                   - iam:UntagMFADevice
                 Resource:
+                  - 'arn:aws:iam::*:mfa/${aws:username}'
+              - Effect: Allow
+                Action:
+                  - iam:EnableMFADevice
+                  - iam:GetMFADevice
+                  - iam:GetUser
+                  - iam:ListMFADevices
+                  - iam:ResyncMFADevice
+                Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
-        - PolicyName: iam-user-access-key-policy
+              - Effect: Allow
+                Action:
+                  - iam:DeactivateMFADevice
+                Resource:
+                  - 'arn:aws:iam::*:user/${aws:username}'
+                Condition:
+                  Bool:
+                    aws:MultiFactorAuthPresent: 'true'
+        - PolicyName: iam-user-access-key-cleanup-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
-                  - iam:CreateAccessKey
                   - iam:DeleteAccessKey
                   - iam:GetAccessKeyLastUsed
                   - iam:ListAccessKeys
-                  - iam:UpdateAccessKey
                 Resource:
                   - 'arn:aws:iam::*:user/${aws:username}'
+  LongTermAccessKeyDenyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Deny creating long-term IAM access keys.
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - iam:CreateAccessKey
+            Resource: '*'
+      Roles:
+        - !Ref AdminRoleToSwitch
+      Groups:
+        - !Ref AccountRolesSwitcherGroup
+        - !Ref ReadOnlyUserGroup
+        - !Ref SelfManagedIamUserGroup
 Outputs:
   AdminRoleToSwitchArn:
     Value: !GetAtt AdminRoleToSwitch.Arn
